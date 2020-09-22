@@ -1,17 +1,14 @@
 package hu.elte.issuetrackerrest.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,28 +21,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class Issue {
-
+public class Label {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column
-    private String title;
-
-    @Column
-    private String description;
-
-    @Column
-    private String place;
-
-    public enum Status {
-        NEW, DOING, DONE
-    }
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Status status;
+    private String text;
 
     @Column(updatable = false)
     @CreationTimestamp
@@ -55,10 +37,7 @@ public class Issue {
     @UpdateTimestamp
     private LocalDateTime updated_at;
     
-    @OneToMany(mappedBy = "issue")
-    private List<Message> messages;
-    
-    @ManyToMany
-    @JoinTable
-    private List<Label> labels;
+    @ManyToMany(mappedBy = "labels")
+    @JsonIgnore
+    private List<Issue> issues;
 }
