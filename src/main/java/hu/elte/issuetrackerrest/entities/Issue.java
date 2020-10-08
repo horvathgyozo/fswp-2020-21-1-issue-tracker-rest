@@ -2,6 +2,7 @@ package hu.elte.issuetrackerrest.entities;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -55,10 +56,10 @@ public class Issue {
     @UpdateTimestamp
     private LocalDateTime updated_at;
     
-    @OneToMany(mappedBy = "issue")
+    @OneToMany(mappedBy = "issue", cascade = {CascadeType.MERGE, CascadeType.PERSIST,CascadeType.REFRESH})
     private List<Message> messages;
     
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable
     private List<Label> labels;
 }
