@@ -1,5 +1,7 @@
 package hu.elte.issuetrackerrest.security;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -56,14 +58,18 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             FilterChain chain,
                                             Authentication auth) throws IOException {
         long now = System.currentTimeMillis();
-        String token = Jwts.builder()
-                    .setSubject(auth.getName())
-                    .claim("authorities", auth.getAuthorities().stream()
-                            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-                    .setIssuedAt(new Date(now))
-                    .setExpiration(new Date(now + EXPIRATION))
-                    .signWith(SignatureAlgorithm.HS512, SECRET)
-                    .compact();
+        String token = JWT.create()
+                .withSubject(auth.getName())
+                .withExpiresAt(new Date(now + EXPIRATION))
+                .sign(Algorithm.HMAC512(SECRET.getBytes()));
+//        String token = Jwts.builder()
+//                    .setSubject(auth.getName())
+//                    .claim("authorities", auth.getAuthorities().stream()
+//                            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+//                    .setIssuedAt(new Date(now))
+//                    .setExpiration(new Date(now + EXPIRATION))
+//                    .signWith(SignatureAlgorithm.HS512, SECRET)
+//                    .compact();
 
         res.getWriter().write(token);
         res.getWriter().flush();
