@@ -9,8 +9,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.servlet.FilterChain;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,10 +31,11 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private static final int EXPIRATION =  30 * 60 * 1000;
     
-    private static final String SECRET =  "alma";
+    private String secret;
 
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, String secret) {
         this.authenticationManager = authenticationManager;
+        this.secret = secret;
         setFilterProcessesUrl("/api/auth"); 
     }
 
@@ -62,7 +66,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String token = JWT.create()
                 .withSubject(auth.getName())
                 .withExpiresAt(new Date(now + EXPIRATION))
-                .sign(Algorithm.HMAC512(SECRET.getBytes()));
+                .sign(Algorithm.HMAC512(secret.getBytes()));
 //        String token = Jwts.builder()
 //                    .setSubject(auth.getName())
 //                    .claim("authorities", auth.getAuthorities().stream()
@@ -72,7 +76,16 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 //                    .signWith(SignatureAlgorithm.HS512, SECRET)
 //                    .compact();
 
-        res.getWriter().write(token);
+        Cookie cookie = new Cookie(COOKIE_NAME, token);
+        cookie.setMaxAge(EXPIRATION);
+        cookie.setPath("/api");
+        cookie.setHttpOnly(true);
+        res.addCookie(cookie);
+
+        Map<String, String> responseObject  = new HashMap<String, String>() {{
+            put("token", token);
+        }};
+        res.getWriter().write(new ObjectMapper().writeValueAsString(responseObject));
         res.getWriter().flush();
     }
 }

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +26,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private static final String SECRET_PROPERTY_NAME = "security.jwt.secret";
+    
+    @Autowired
+    private Environment environment;
+    
 //    private static void handleException(HttpServletRequest req, HttpServletResponse rsp, AuthenticationException e)
 //    throws IOException {
 //        PrintWriter writer = rsp.getWriter();
@@ -34,6 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        String secret = environment.getProperty(SECRET_PROPERTY_NAME);
         http    
                 .cors().and()
                 .csrf().disable()
@@ -47,8 +54,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
 //                .exceptionHandling().authenticationEntryPoint(WebSecurityConfig::handleException)
 //                    .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                .addFilter(new JWTAuthenticationFilter(authenticationManager(), secret))
+                .addFilter(new JWTAuthorizationFilter(authenticationManager(), secret))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 //                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(jwtCookieStore, authenticationManager()))
 //                .addFilterAfter(new JwtTokenAuthenticationFilter(jwtCookieStore), UsernamePasswordAuthenticationFilter.class)
