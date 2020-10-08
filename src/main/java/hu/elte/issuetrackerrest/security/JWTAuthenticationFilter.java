@@ -3,6 +3,7 @@ package hu.elte.issuetrackerrest.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hu.elte.issuetrackerrest.entities.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.IOException;
@@ -38,8 +39,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public Authentication attemptAuthentication(HttpServletRequest req,
                                                 HttpServletResponse res) throws AuthenticationException {
         try {
-            UserCredentials creds = new ObjectMapper()
-                    .readValue(req.getInputStream(), UserCredentials.class);
+            User creds = new ObjectMapper()
+                    .readValue(req.getInputStream(), User.class);
 
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

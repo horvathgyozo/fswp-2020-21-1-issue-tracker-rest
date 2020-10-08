@@ -35,7 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http    
-//                .cors().and()
+                .cors().and()
                 .csrf().disable()
                 .headers()
                     .frameOptions().disable()
@@ -80,11 +80,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .passwordEncoder(passwordEncoder());
     }
     
-//    @Bean
-//    CorsConfigurationSource corsConfigurationSource() {
-//      final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//      source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-//      return source;
-//    }
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+      final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+      source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+      return source;
+    }
 
 }
