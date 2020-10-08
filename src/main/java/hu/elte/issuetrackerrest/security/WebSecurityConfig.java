@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -36,8 +37,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http    
 //                .cors().and()
                 .csrf().disable()
+                .headers()
+                    .frameOptions().disable()
+                    .and()
                 .authorizeRequests()
                     .antMatchers(HttpMethod.POST, "/api/auth").permitAll()
+                    .antMatchers("/h2/**").permitAll()
                     .anyRequest().authenticated()
                     .and()
 //                .exceptionHandling().authenticationEntryPoint(WebSecurityConfig::handleException)
@@ -50,20 +55,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 
     }
 
+//    @Autowired
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        auth
+//                .inMemoryAuthentication()
+//                .withUser("user")
+////                .password(passwordEncoder().encode("user"))
+//                .password("{noop}user")
+//                .authorities("ROLE_USER");
+//    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     @Autowired
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
-                .inMemoryAuthentication()
-                .withUser("user")
-//                .password(passwordEncoder().encode("user"))
-                .password("{noop}user")
-                .authorities("ROLE_USER");
+            .userDetailsService(userDetailsService)
+            .passwordEncoder(passwordEncoder());
     }
-
-//    @Bean
-//    public BCryptPasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
     
 //    @Bean
 //    CorsConfigurationSource corsConfigurationSource() {
