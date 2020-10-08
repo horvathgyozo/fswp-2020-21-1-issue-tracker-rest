@@ -48,7 +48,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .frameOptions().disable()
                     .and()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/api/auth").permitAll()
+//                    .antMatchers(HttpMethod.POST, "/api/auth").permitAll()
+                    .antMatchers(HttpMethod.POST, "/users").permitAll()
                     .antMatchers("/h2/**").permitAll()
                     .anyRequest().authenticated()
                     .and()
@@ -57,8 +58,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(new JWTAuthenticationFilter(authenticationManager(), secret))
                 .addFilter(new JWTAuthorizationFilter(authenticationManager(), secret))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(jwtCookieStore, authenticationManager()))
-//                .addFilterAfter(new JwtTokenAuthenticationFilter(jwtCookieStore), UsernamePasswordAuthenticationFilter.class)
                 
     }
 
