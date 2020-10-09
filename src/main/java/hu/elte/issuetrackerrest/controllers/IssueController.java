@@ -3,13 +3,21 @@ package hu.elte.issuetrackerrest.controllers;
 import hu.elte.issuetrackerrest.entities.Issue;
 import hu.elte.issuetrackerrest.entities.Label;
 import hu.elte.issuetrackerrest.entities.Message;
+import hu.elte.issuetrackerrest.entities.User;
 import hu.elte.issuetrackerrest.repositories.IssueRepository;
 import hu.elte.issuetrackerrest.repositories.LabelRepository;
 import hu.elte.issuetrackerrest.repositories.MessageRepository;
+import hu.elte.issuetrackerrest.repositories.UserRepository;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,13 +38,27 @@ public class IssueController {
     private MessageRepository messageRepository;
     
     @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
     private LabelRepository labelRepository;
     
     @GetMapping("")
     public ResponseEntity<Iterable<Issue>> getAll() {
-        return ResponseEntity.ok(issueRepository.findAll());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        if (roles.contains("ROLE_ADMIN")) {
+            return ResponseEntity.ok(issueRepository.findAll());
+        }
+        String username = auth.getName();
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get().getIssues());
+        }
+        return ResponseEntity.notFound().build();
     }
     
+//    @Secured({ "ROLE_USER", "ROLE_ADMIN" })
     @GetMapping("/{id}")
     public ResponseEntity<Issue> get(@PathVariable Integer id) {
         Optional<Issue> oIssue = issueRepository.findById(id);
@@ -64,6 +86,7 @@ public class IssueController {
     }
     
     @DeleteMapping("/{id}")
+    @Secured({ "ROLE_ADMIN" })
     public ResponseEntity<Issue> delete(@PathVariable Integer id) {
         Optional<Issue> oIssue = issueRepository.findById(id);
         if (oIssue.isPresent()) {
